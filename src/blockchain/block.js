@@ -5,7 +5,12 @@ class Block{
         this.hash = hash;
         this.data =data;
     }
-                                                                     //metodo Tostring para devolver inf almacenada en el bloque
+    
+    static get genesis(){
+        const timestamp = (new Date(2020, 0, 1)).getTime();
+        return new this(timestamp, undefined, 'Genezi-hash', 'zero');
+    }
+    //metodo Tostring para devolver inf almacenada en el bloque
     toString(){
         const{
             timestamp, previousHash, hash, data,
