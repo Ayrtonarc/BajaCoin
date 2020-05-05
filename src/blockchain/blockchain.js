@@ -5,11 +5,11 @@ class Blockchain {
         this.blocks = [Block.genesis];
     }
 
-    addBlock(data){
-        const previousBlock = this.blocks[this.blocks.length = 1];
-        const block = Block.mine(previousBlock, data);
+    addBlock(data){  //metodo
+        const previousBlock = this.blocks[this.blocks.length - 1];
+        const block = Block.mine(previousBlock, data);  //minar
 
-        this.block.push(block);
+        this.blocks.push(block);
 
         return block;
     }
