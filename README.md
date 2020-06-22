@@ -1,2 +1,0 @@
-# BajaCoin
- BCN
