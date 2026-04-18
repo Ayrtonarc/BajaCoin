@@ -6,8 +6,9 @@ const peers = process.env.PEERS ? process.env.PEERS.split(',') : [];
 const PORT = process.env.P2P_PORT || 6001;
 
 class P2PServer {
-  constructor(blockchain) {
+  constructor(blockchain, mempool) {
     this.blockchain = blockchain;
+    this.mempool = mempool;
     this.sockets = [];
   }
 
@@ -30,6 +31,7 @@ class P2PServer {
     console.log('Socket connected');
     this.messageHandler(socket);
     this.sendChain(socket);
+    this.sendMempool(socket);
   }
 
   messageHandler(socket) {
@@ -40,10 +42,34 @@ class P2PServer {
           this.handleChain(data.chain);
           break;
         case 'TX':
-          // Aquí se podría propagar transacciones
+          if (this.mempool && data.tx) {
+            this.mempool.addTransaction(data.tx);
+            this.broadcastTx(data.tx, socket); // Propaga a otros nodos menos al origen
+          }
+          break;
+        case 'MEMPOOL':
+          if (this.mempool && Array.isArray(data.txs)) {
+            data.txs.forEach(tx => this.mempool.addTransaction(tx));
+          }
           break;
       }
     });
+  }
+
+  sendTx(socket, tx) {
+    socket.send(JSON.stringify({ type: 'TX', tx }));
+  }
+
+  broadcastTx(tx, exceptSocket = null) {
+    this.sockets.forEach(s => {
+      if (s !== exceptSocket) this.sendTx(s, tx);
+    });
+  }
+
+  sendMempool(socket) {
+    if (this.mempool) {
+      socket.send(JSON.stringify({ type: 'MEMPOOL', txs: this.mempool.getTransactions() }));
+    }
   }
 
   sendChain(socket) {
