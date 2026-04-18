@@ -29,5 +29,8 @@
     "silent": false,
     "verbose": true,
     "testEnvironment": "node"
+  },
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
   }
 }
