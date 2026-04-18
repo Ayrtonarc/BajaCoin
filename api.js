@@ -1,36 +1,40 @@
 // api.js
 // API REST para BajaCoin
 const express = require('express');
+const path = require('path');
 const Blockchain = require('./src/blockchain/blockchain').default || require('./src/blockchain/blockchain');
 const Mempool = require('./src/blockchain/transaction/mempool');
 const { Transaction } = require('./src/blockchain/transaction/transaction');
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Instancias globales (en un proyecto real, usar inyección de dependencias)
 const blockchain = new Blockchain();
 const mempool = new Mempool();
 
-// GET /blocks - Listar la blockchain
-app.get('/blocks', (req, res) => {
+const api = express.Router();
+
+// GET /api/blocks - Listar la blockchain
+api.get('/blocks', (req, res) => {
   res.json(blockchain.blocks);
 });
 
-// GET /block/:hash - Consultar bloque por hash
-app.get('/block/:hash', (req, res) => {
+// GET /api/block/:hash - Consultar bloque por hash
+api.get('/block/:hash', (req, res) => {
   const block = blockchain.blocks.find(b => b.hash === req.params.hash);
   if (!block) return res.status(404).json({ error: 'Block not found' });
   res.json(block);
 });
 
-// GET /mempool - Ver transacciones pendientes
-app.get('/mempool', (req, res) => {
+// GET /api/mempool - Ver transacciones pendientes
+api.get('/mempool', (req, res) => {
   res.json(mempool.getTransactions());
 });
 
-// POST /transactions - Enviar transacción al mempool
-app.post('/transactions', (req, res) => {
+// POST /api/transactions - Enviar transacción al mempool
+api.post('/transactions', (req, res) => {
   try {
     const { inputs, outputs } = req.body;
     if (!Array.isArray(inputs) || !Array.isArray(outputs)) {
@@ -44,8 +48,10 @@ app.post('/transactions', (req, res) => {
   }
 });
 
+app.use('/api', api);
+
 // Iniciar servidor
 const PORT = process.env.API_PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`API REST listening on port ${PORT}`);
+  console.log(`Web UI y API REST escuchando en el puerto ${PORT}`);
 });

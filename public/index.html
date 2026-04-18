@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BajaCoin Explorer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #f7f7f7; }
+    h1 { color: #2c3e50; }
+    .section { background: #fff; padding: 1rem; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+    pre { background: #eee; padding: 0.5rem; border-radius: 4px; overflow-x: auto; }
+    .block, .tx { border-bottom: 1px solid #ddd; padding: 0.5rem 0; }
+    .block:last-child, .tx:last-child { border-bottom: none; }
+    .status { color: #16a085; }
+  </style>
+</head>
+<body>
+  <h1>BajaCoin Explorer</h1>
+  <div class="section">
+    <h2>Estado del nodo</h2>
+    <div id="status">Cargando...</div>
+  </div>
+  <div class="section">
+    <h2>Blockchain</h2>
+    <div id="blocks">Cargando...</div>
+  </div>
+  <div class="section">
+    <h2>Mempool (Transacciones pendientes)</h2>
+    <div id="mempool">Cargando...</div>
+  </div>
+  <script>
+    async function fetchBlocks() {
+      const res = await fetch('/api/blocks');
+      const blocks = await res.json();
+      document.getElementById('blocks').innerHTML = blocks.map(block => `
+        <div class="block">
+          <b>Hash:</b> <span style="font-size:0.9em">${block.hash}</span><br>
+          <b>Previo:</b> <span style="font-size:0.9em">${block.previousHash}</span><br>
+          <b>Nonce:</b> ${block.nonce} | <b>Dificultad:</b> ${block.difficulty}<br>
+          <b>Transacciones:</b> ${block.data.length}
+          <details><summary>Ver datos</summary><pre>${JSON.stringify(block, null, 2)}</pre></details>
+        </div>
+      `).join('');
+    }
+    async function fetchMempool() {
+      const res = await fetch('/api/mempool');
+      const txs = await res.json();
+      document.getElementById('mempool').innerHTML = txs.length ? txs.map(tx => `
+        <div class="tx">
+          <b>ID:</b> ${tx.id}<br>
+          <b>Entradas:</b> ${tx.inputs.length} | <b>Salidas:</b> ${tx.outputs.length}
+          <details><summary>Ver datos</summary><pre>${JSON.stringify(tx, null, 2)}</pre></details>
+        </div>
+      `).join('') : '<i>No hay transacciones pendientes.</i>';
+    }
+    async function fetchStatus() {
+      document.getElementById('status').innerHTML = `<span class="status">API conectada</span>`;
+    }
+    fetchStatus();
+    fetchBlocks();
+    fetchMempool();
+    setInterval(fetchBlocks, 5000);
+    setInterval(fetchMempool, 5000);
+  </script>
+</body>
+</html>
