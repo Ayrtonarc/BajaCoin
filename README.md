@@ -8,7 +8,7 @@ BajaCoin es una implementación educativa de una blockchain inspirada en Bitcoin
 - **Prueba de trabajo (PoW)**: Minado de bloques con dificultad ajustable.
 - **Transacciones UTXO**: Modelo de transacciones con entradas y salidas no gastadas.
 - **Minería con recompensa**: Generación de transacción coinbase para recompensar al minero.
-- **Validación de bloques y transacciones**: Verificación de integridad y gasto correcto de UTXOs.
+- **Validación estricta**: Integridad de bloques, duplicados, tamaño máximo, estructura y montos de transacciones.
 - **Red P2P**: Sincronización de la blockchain entre nodos usando WebSocket.
 - **Pruebas unitarias**: Cobertura de las funcionalidades principales con Jest.
 
@@ -44,14 +44,75 @@ P2P_PORT=6002 PEERS=ws://localhost:6001 npm start
 - Cambia `P2P_PORT` para el puerto de tu nodo.
 - Usa `PEERS` para conectar con otros nodos (separados por coma).
 
+
 ## Estructura del proyecto
 
-- `src/blockchain/block.js` — Lógica de bloques
-- `src/blockchain/blockchain.js` — Lógica de la cadena de bloques
-- `src/blockchain/transaction/` — Lógica de transacciones y UTXO
-- `src/blockchain/p2p.js` — Red P2P con WebSocket
-- `src/blockchain/modules/validate.js` — Validación de la cadena
+- `src/blockchain/block.js` — Lógica de bloques (estructura, minado, hash, dificultad)
+- `src/blockchain/blockchain.js` — Lógica de la cadena de bloques (agregado, reemplazo, recompensa)
+- `src/blockchain/transaction/` — Lógica de transacciones, coinbase y UTXO
+- `src/blockchain/p2p.js` — Red P2P con WebSocket (sincronización y broadcast)
+- `src/blockchain/modules/validate.js` — Validación estricta de la cadena y transacciones
 - Pruebas en archivos `.test.js`
+
+## Estructura de un bloque
+
+```json
+{
+   "timestamp": 1713300000000,
+   "previousHash": "...",
+   "hash": "...",
+   "data": [
+      {
+         "inputs": [ { "txId": "...", "outputIndex": 0, "signature": null } ],
+         "outputs": [ { "address": "addr1", "amount": 10 } ],
+         "id": "..."
+      }
+   ],
+   "nonce": 12345,
+   "difficulty": 2
+}
+```
+
+## Estructura de una transacción
+
+```json
+{
+   "inputs": [ { "txId": "...", "outputIndex": 0, "signature": null } ],
+   "outputs": [ { "address": "addr1", "amount": 10 } ],
+   "id": "..."
+}
+```
+
+## Ejemplo de uso de nodos P2P
+
+Inicia dos nodos en diferentes terminales:
+
+```bash
+P2P_PORT=6001 npm start
+P2P_PORT=6002 PEERS=ws://localhost:6001 npm start
+```
+
+## Validaciones estrictas
+
+- El bloque génesis debe coincidir exactamente.
+- No se permiten hashes de bloque duplicados.
+- El tamaño máximo de bloque es 1MB.
+- Cada bloque debe tener un hash válido y cumplir la dificultad.
+- Las transacciones deben tener inputs y outputs bien formados y montos positivos.
+
+## Pruebas
+
+Ejecuta todas las pruebas unitarias:
+
+```bash
+npm test
+```
+
+## Créditos
+Desarrollado por Ayrtonarc y colaboradores.
+
+## Licencia
+MIT
 
 ## Créditos
 Desarrollado por Ayrtonarc y colaboradores.
