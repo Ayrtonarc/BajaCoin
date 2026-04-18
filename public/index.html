@@ -27,8 +27,45 @@
   <div class="section">
     <h2>Mempool (Transacciones pendientes)</h2>
     <div id="mempool">Cargando...</div>
+    <button id="mineBtn">⛏️ Minar bloque</button>
+    <div id="mineStatus"></div>
+  </div>
+  <div class="section">
+    <h2>Peers conectados</h2>
+    <div id="peers">Cargando...</div>
+    <form id="addPeerForm">
+      <input type="text" id="peerAddress" placeholder="ws://localhost:6002" required>
+      <button type="submit">Agregar peer</button>
+    </form>
+    <div id="peerStatus"></div>
   </div>
   <script>
+        async function fetchPeers() {
+          const res = await fetch('/api/peers');
+          const data = await res.json();
+          document.getElementById('peers').innerHTML = data.peers.length ? data.peers.map(p => `<div>${p}</div>`).join('') : '<i>No hay peers conectados.</i>';
+        }
+        async function addPeer(e) {
+          e.preventDefault();
+          const address = document.getElementById('peerAddress').value;
+          document.getElementById('peerStatus').textContent = 'Conectando...';
+          try {
+            const res = await fetch('/api/peers', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ address })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              document.getElementById('peerStatus').textContent = '✅ ' + data.message;
+              fetchPeers();
+            } else {
+              document.getElementById('peerStatus').textContent = '⚠️ ' + (data.error || 'Error al conectar peer');
+            }
+          } catch (e) {
+            document.getElementById('peerStatus').textContent = '⚠️ Error de red';
+          }
+        }
     async function fetchBlocks() {
       const res = await fetch('/api/blocks');
       const blocks = await res.json();
@@ -56,11 +93,36 @@
     async function fetchStatus() {
       document.getElementById('status').innerHTML = `<span class="status">API conectada</span>`;
     }
+
+    async function mineBlock() {
+      document.getElementById('mineStatus').textContent = 'Minando...';
+      try {
+        const res = await fetch('/api/mine', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('mineStatus').textContent = '✅ Bloque minado: ' + data.block.hash;
+          fetchBlocks();
+          fetchMempool();
+        } else {
+          document.getElementById('mineStatus').textContent = '⚠️ ' + (data.error || 'Error al minar');
+        }
+      } catch (e) {
+        document.getElementById('mineStatus').textContent = '⚠️ Error de red';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('mineBtn').onclick = mineBlock;
+      document.getElementById('addPeerForm').onsubmit = addPeer;
+      fetchPeers();
+    });
+
     fetchStatus();
     fetchBlocks();
     fetchMempool();
     setInterval(fetchBlocks, 5000);
     setInterval(fetchMempool, 5000);
+    setInterval(fetchPeers, 5000);
   </script>
 </body>
 </html>

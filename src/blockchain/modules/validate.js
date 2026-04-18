@@ -1,6 +1,6 @@
-import Block from '../block';
+const Block = require('../block');
 
-export default (blockchain) => {
+module.exports = (blockchain) => {
   const [genesisBlock, ...blocks] = blockchain;
 
   // Validar bloque génesis

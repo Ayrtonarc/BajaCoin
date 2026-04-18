@@ -1,8 +1,8 @@
 
-import Block from './block';
-import validate from './modules/validate';
-import { createCoinbaseTx } from './transaction/coinbase';
-import { saveBlockchain, loadBlockchain } from './persistencia';
+const Block = require('./block');
+const validate = require('./modules/validate');
+const { createCoinbaseTx } = require('./transaction/coinbase');
+const { saveBlockchain, loadBlockchain } = require('./persistencia');
 
 class Blockchain {
   constructor(minerAddress = 'miner-address') {
@@ -36,4 +36,4 @@ class Blockchain {
   }
 }
 
-export default Blockchain;
+module.exports = Blockchain;
