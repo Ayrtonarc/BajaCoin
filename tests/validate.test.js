@@ -1,19 +1,26 @@
 import Blockchain from '../src/blockchain/blockchain';
 import validate from '../src/blockchain/modules/validate';
 import Block from '../src/blockchain/block';
+import fs from 'fs';
+import path from 'path';
+const CHAIN_FILE = path.join(__dirname, '../data/blockchain.json');
 
 describe('validate()', () => {
   let blockchain;
 
   beforeEach(() => {
+    if (fs.existsSync(CHAIN_FILE)) fs.unlinkSync(CHAIN_FILE);
     blockchain = new Blockchain();
   });
 
   it('validates a valid chain', () => {
-    // Bloque génesis con data string, bloques siguientes con array de transacciones
+    // Bloque génesis con data string, bloques siguientes con array de transacciones válidas
     blockchain.blocks[0].data = 'i like ramen.';
-    blockchain.addBlock([]);
-    blockchain.addBlock([]);
+    // Elimina bloques extra si existen
+    blockchain.blocks = [blockchain.blocks[0]];
+    const tx = { inputs: [], outputs: [{ address: 'A', amount: 1 }] };
+    blockchain.addBlock([tx]);
+    blockchain.addBlock([tx]);
     expect(validate(blockchain.blocks)).toBe(true);
   });
 
