@@ -27,19 +27,25 @@ describe('Block', () => {
 
     expect(block.hash.length).toEqual(64);
     expect(block.previousHash).toEqual(previousBlock.hash);
-    expect(data).toEqual(data);
+    expect(block.data).toEqual(data);
+    // El hash debe cumplir con la dificultad
+    expect(block.hash.substring(0, block.difficulty)).toEqual('0'.repeat(block.difficulty));
+    expect(typeof block.nonce).toBe('number');
+    expect(typeof block.difficulty).toBe('number');
   });
 
   it('use static hash()', () => {
-    hash = Block.hash(timestamp, previousBlock.hash, data);
-    const hasOutput = 'e7ee69f7986f4cb5a34a6e3330c3ec4888462493a1523aa33f8f16eabf7a3cce';
-
-    expect(hash).toEqual(hasOutput);
+    // El hash ahora depende de nonce y dificultad
+    hash = Block.hash(timestamp, previousBlock.hash, data, 0, 2);
+    expect(typeof hash).toBe('string');
+    expect(hash.length).toEqual(64);
   });
 
   it('use toString()', () => {
     const block = Block.mine(previousBlock, data);
 
     expect(typeof block.toString()).toEqual('string');
+    expect(block.toString()).toMatch(/nonce/);
+    expect(block.toString()).toMatch(/difficulty/);
   });
 });

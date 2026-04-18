@@ -13,6 +13,7 @@ export default (blockchain) => {
 
     if (previousHash !== previousBlock.hash) throw Error('Invalid previous hash.');
     if (hash !== Block.hash(timestamp, previousHash, data, nonce, difficulty)) throw Error('Invalid hash.');
+    if (hash.substring(0, difficulty) !== '0'.repeat(difficulty)) throw Error('Hash does not meet difficulty.');
   }
 
   return true;

@@ -1,17 +1,22 @@
+
 import Block from './block';
 import validate from './modules/validate';
+import { createCoinbaseTx } from './transaction/coinbase';
 
 class Blockchain {
-  constructor() {
+  constructor(minerAddress = 'miner-address') {
     this.blocks = [Block.genesis];
+    this.minerAddress = minerAddress;
+    this.blockReward = 50; // Recompensa fija para demo
   }
 
-  addBlock(data) {
+  addBlock(transactions = []) {
     const previousBlock = this.blocks[this.blocks.length - 1];
-    const block = Block.mine(previousBlock, data);
-
+    // Agregar transacción coinbase al inicio
+    const coinbaseTx = createCoinbaseTx(this.minerAddress, this.blockReward);
+    const blockData = [coinbaseTx, ...transactions];
+    const block = Block.mine(previousBlock, blockData);
     this.blocks.push(block);
-
     return block;
   }
   
@@ -21,11 +26,9 @@ class Blockchain {
       validate(newBlocks);
     } catch (error) {
       throw Error('Received chain is invalid');
-      }
-      
-      this.blocks = newBlocks
-
-      return this.blocks;
+    }
+    this.blocks = newBlocks;
+    return this.blocks;
   }
 }
 

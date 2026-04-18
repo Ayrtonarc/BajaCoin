@@ -17,10 +17,14 @@ describe('Blockchain', () => {
 
   it('use addBlock()', () => {
     const data = 'd4t4';
-    blockchain.addBlock(data);
+    blockchain.addBlock([data]);
 
     const [, lastBlock] = blockchain.blocks;
-    expect(lastBlock.data).toEqual(data);
+    // El primer elemento es la coinbase, el segundo es el dato de usuario
+    expect(lastBlock.data[1]).toEqual(data);
     expect(blockchain.blocks.length).toEqual(2);
+    // Verifica que la coinbase esté presente
+    expect(lastBlock.data[0].outputs[0].address).toBe(blockchain.minerAddress);
+    expect(lastBlock.data[0].outputs[0].amount).toBe(blockchain.blockReward);
   });
 });
